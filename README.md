@@ -1,13 +1,13 @@
-# node-red-spotify
+# @tcreswick/node-red-spotify
 
-[![npm](https://img.shields.io/npm/v/node-red-spotify)](https://www.npmjs.com/package/node-red-spotify)
-[![Node-RED Flow Library](https://img.shields.io/badge/Node--RED-Flow%20Library-8f0000)](https://flows.nodered.org/node/node-red-spotify)
+[![npm](https://img.shields.io/npm/v/@tcreswick/node-red-spotify)](https://www.npmjs.com/package/@tcreswick/node-red-spotify)
+[![Node-RED Flow Library](https://img.shields.io/badge/Node--RED-Flow%20Library-8f0000)](https://flows.nodered.org/node/@tcreswick/node-red-spotify)
 [![CI](https://github.com/tcreswick/node-red-spotify/actions/workflows/ci.yml/badge.svg)](https://github.com/tcreswick/node-red-spotify/actions/workflows/ci.yml)
 
 Node-RED nodes for the [Spotify Web API](https://developer.spotify.com/documentation/web-api), with the OAuth
 (Authorization Code + PKCE) flow handled by a configuration node.
 
-Listed on the Node-RED Flow Library: <https://flows.nodered.org/node/node-red-spotify>
+Listed on the Node-RED Flow Library: <https://flows.nodered.org/node/@tcreswick/node-red-spotify>
 
 ## Nodes
 - **spotify-config** – Client ID/Secret, scopes, redirect URI, *Authorise* button. Stores tokens in
@@ -19,7 +19,7 @@ Listed on the Node-RED Flow Library: <https://flows.nodered.org/node/node-red-sp
 
 ## Setup
 1. Create an app at <https://developer.spotify.com/dashboard>.
-2. Install from the Node-RED palette manager (search "spotify"), or `cd ~/.node-red && npm install node-red-spotify` and restart.
+2. Install from the Node-RED palette manager (search "spotify"), or `cd ~/.node-red && npm install @tcreswick/node-red-spotify` and restart.
 3. Add a Spotify node, edit the config, copy the displayed **Redirect URI**
    (`<editor origin>/spotify-web-api/callback`) into the Spotify app's Redirect URIs.
    Spotify requires HTTPS (or `http://127.0.0.1`). If Node-RED sits behind a proxy, set the Redirect URI field manually.
