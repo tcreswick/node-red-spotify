@@ -1,0 +1,92 @@
+<script type="text/html" data-template-name="spotify-config">
+  <div class="form-row"><label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-config-input-name" placeholder="Spotify"></div>
+  <div class="form-row"><label for="node-config-input-clientId"><i class="fa fa-key"></i> Client ID</label>
+    <input type="text" id="node-config-input-clientId"></div>
+  <div class="form-row"><label for="node-config-input-clientSecret"><i class="fa fa-lock"></i> Client Secret</label>
+    <input type="password" id="node-config-input-clientSecret" placeholder="optional (PKCE is used without it)"></div>
+  <div class="form-row"><label for="node-config-input-redirectUri"><i class="fa fa-link"></i> Redirect URI</label>
+    <input type="text" id="node-config-input-redirectUri"></div>
+  <div class="form-tips" style="margin-bottom:10px">Add this exact Redirect URI to your app at
+    <a href="https://developer.spotify.com/dashboard" target="_blank">developer.spotify.com/dashboard</a>.
+    Spotify requires <code>https://</code> (or <code>http://127.0.0.1</code>).</div>
+  <div class="form-row"><label for="node-config-input-scope"><i class="fa fa-shield"></i> Scopes</label>
+    <textarea id="node-config-input-scope" rows="5" style="width:70%"></textarea></div>
+  <div class="form-row"><label for="node-config-input-maxRetries">Max retries</label>
+    <input type="number" id="node-config-input-maxRetries" min="0" max="10" style="width:80px"></div>
+  <div class="form-row"><label>Account</label>
+    <button type="button" class="red-ui-button" id="spotify-auth-btn"><i class="fa fa-spotify"></i> Authorise with Spotify</button>
+    <button type="button" class="red-ui-button" id="spotify-revoke-btn">Disconnect</button>
+    <span id="spotify-auth-status" style="margin-left:8px"></span></div>
+  <div class="form-tips">Authorise after entering the Client ID. Tokens are stored in <code>spotify-web-api-tokens.json</code> in the Node-RED user directory and refreshed automatically.</div>
+</script>
+
+<script type="text/html" data-help-name="spotify-config">
+<p>Holds the Spotify app credentials and the OAuth tokens (Authorization Code flow with PKCE).</p>
+<ol>
+<li>Create an app on the <a href="https://developer.spotify.com/dashboard" target="_blank">Spotify dashboard</a>.</li>
+<li>Add the Redirect URI shown here to the app's settings.</li>
+<li>Enter Client ID (and optionally Client Secret), then click <b>Authorise with Spotify</b>.</li>
+</ol>
+<p>Access tokens are refreshed automatically; 429 rate limits are retried using <code>Retry-After</code>.</p>
+</script>
+
+<script type="text/javascript">
+(function () {
+  var DEFAULT_SCOPES = [
+    'user-read-private', 'user-read-email', 'user-read-playback-state', 'user-modify-playback-state',
+    'user-read-currently-playing', 'user-read-recently-played', 'user-top-read', 'user-library-read',
+    'user-library-modify', 'user-follow-read', 'user-follow-modify', 'playlist-read-private',
+    'playlist-read-collaborative', 'playlist-modify-public', 'playlist-modify-private',
+    'ugc-image-upload', 'streaming'
+  ].join(' ');
+  function defaultRedirect() {
+    var root = (RED.settings.httpAdminRoot || '/').replace(/\/?$/, '/');
+    return location.origin + root + 'spotify-web-api/callback';
+  }
+  RED.nodes.registerType('spotify-config', {
+    category: 'config',
+    defaults: {
+      name: { value: '' },
+      redirectUri: { value: '' },
+      scope: { value: DEFAULT_SCOPES },
+      maxRetries: { value: 3, validate: RED.validators.number() }
+    },
+    credentials: { clientId: { type: 'text' }, clientSecret: { type: 'password' } },
+    label: function () { return this.name || 'Spotify' + (this.clientId ? ' (' + this.clientId.substr(0, 6) + '…)' : ''); },
+    oneditprepare: function () {
+      var node = this;
+      if (!$('#node-config-input-redirectUri').val()) $('#node-config-input-redirectUri').val(defaultRedirect());
+      function status() {
+        $.getJSON('spotify-web-api/status', { id: node.id }, function (r) {
+          $('#spotify-auth-status').html(r.authorized
+            ? '<span style="color:green"><i class="fa fa-check"></i> Authorised' + (r.user ? ' as ' + $('<i>').text(r.user).html() : '') + '</span>'
+            : '<span style="color:#999">Not authorised</span>');
+        });
+      }
+      status();
+      $('#spotify-auth-btn').on('click', function () {
+        var data = {
+          id: node.id,
+          clientId: $('#node-config-input-clientId').val(),
+          clientSecret: $('#node-config-input-clientSecret').val(),
+          redirectUri: $('#node-config-input-redirectUri').val(),
+          scope: $('#node-config-input-scope').val().replace(/\s+/g, ' ')
+        };
+        $.ajax({ url: 'spotify-web-api/auth', type: 'POST', contentType: 'application/json', data: JSON.stringify(data) })
+          .done(function (r) {
+            var w = window.open(r.url, 'spotifyAuth', 'width=520,height=720');
+            var t = setInterval(function () { if (!w || w.closed) { clearInterval(t); status(); } }, 1000);
+          })
+          .fail(function (x) { RED.notify((x.responseJSON && x.responseJSON.error) || 'Authorisation failed', 'error'); });
+      });
+      $('#spotify-revoke-btn').on('click', function () {
+        $.ajax({ url: 'spotify-web-api/revoke', type: 'POST', contentType: 'application/json', data: JSON.stringify({ id: node.id }) }).done(status);
+      });
+      window.addEventListener('message', function h(e) {
+        if (e.data && e.data.spotifyAuth !== undefined) status();
+      });
+    }
+  });
+})();
+</script>

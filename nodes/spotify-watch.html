@@ -1,0 +1,20 @@
+<script type="text/html" data-template-name="spotify-watch">
+  <div class="form-row"><label for="node-input-name"><i class="fa fa-tag"></i> Name</label><input type="text" id="node-input-name"></div>
+  <div class="form-row"><label for="node-input-server"><i class="fa fa-spotify"></i> Account</label><input type="text" id="node-input-server"></div>
+  <div class="form-row"><label for="node-input-interval">Poll (s)</label><input type="number" id="node-input-interval" min="2" style="width:80px"></div>
+  <div class="form-row"><label>&nbsp;</label><input type="checkbox" id="node-input-emitInitial" style="width:auto"> Emit initial state</div>
+  <div class="form-row"><label>&nbsp;</label><input type="checkbox" id="node-input-emitAlways" style="width:auto"> Emit on every poll</div>
+</script>
+<script type="text/html" data-help-name="spotify-watch">
+<p>Polls <code>/me/player</code> and emits a message when the track, play/pause state, device, volume, shuffle or repeat changes.</p>
+<p><code>msg.payload</code> is the playback state (null when nothing is active), <code>msg.event</code> is <code>started</code>, <code>stopped</code> or <code>changed</code>, <code>msg.track</code> a short summary. Requires the <code>user-read-playback-state</code> scope.</p>
+</script>
+<script type="text/javascript">
+RED.nodes.registerType('spotify-watch', {
+  category: 'spotify', color: '#1DB954',
+  defaults: { name: { value: '' }, server: { type: 'spotify-config', required: true },
+    interval: { value: 5, validate: RED.validators.number() }, emitInitial: { value: false }, emitAlways: { value: false } },
+  inputs: 0, outputs: 1, icon: 'feed.svg', paletteLabel: 'spotify watch',
+  label: function () { return this.name || 'spotify watch'; }
+});
+</script>

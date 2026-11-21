@@ -1,0 +1,7 @@
+[
+ {"id":"w1","type":"spotify-watch","name":"","server":"","interval":5,"emitInitial":true,"emitAlways":false,"x":130,"y":80,"wires":[["d1"]]},
+ {"id":"d1","type":"debug","name":"track changed","active":true,"complete":"track","x":340,"y":80,"wires":[]},
+ {"id":"i1","type":"inject","name":"pause","props":[{"p":"payload"}],"payload":"","payloadType":"date","x":120,"y":160,"wires":[["a1"]]},
+ {"id":"a1","type":"spotify-api","name":"","server":"","operation":"pause","params":{},"x":300,"y":160,"wires":[["d2"]]},
+ {"id":"d2","type":"debug","name":"result","active":true,"complete":"statusCode","x":470,"y":160,"wires":[]}
+]

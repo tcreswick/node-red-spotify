@@ -1,0 +1,42 @@
+{
+  "name": "node-red-spotify",
+  "version": "1.0.0",
+  "description": "Node-RED nodes for the Spotify Web API with OAuth (authorization code / PKCE) via a config node",
+  "keywords": [
+    "node-red",
+    "spotify",
+    "oauth",
+    "music",
+    "spotify-web-api"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "node-red": {
+    "version": ">=3.0.0",
+    "nodes": {
+      "spotify-config": "nodes/spotify-config.js",
+      "spotify-api": "nodes/spotify-api.js",
+      "spotify-watch": "nodes/spotify-watch.js"
+    }
+  },
+  "scripts": {
+    "test": "node test/test.js"
+  },
+  "files": [
+    "nodes",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tcreswick/node-red-spotify.git"
+  },
+  "author": "tcreswick",
+  "homepage": "https://github.com/tcreswick/node-red-spotify#readme",
+  "bugs": {
+    "url": "https://github.com/tcreswick/node-red-spotify/issues"
+  }
+}

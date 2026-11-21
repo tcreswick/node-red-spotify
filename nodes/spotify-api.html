@@ -1,0 +1,87 @@
+<script type="text/html" data-template-name="spotify-api">
+  <div class="form-row"><label for="node-input-name"><i class="fa fa-tag"></i> Name</label><input type="text" id="node-input-name"></div>
+  <div class="form-row"><label for="node-input-server"><i class="fa fa-spotify"></i> Account</label><input type="text" id="node-input-server"></div>
+  <div class="form-row"><label for="node-input-operation"><i class="fa fa-cog"></i> Operation</label>
+    <select id="node-input-operation" style="width:70%"></select></div>
+  <div class="form-row" id="spotify-allpages-row"><label>Paging</label>
+    <input type="checkbox" id="node-input-allPages" style="width:auto;vertical-align:top"> fetch all pages (max
+    <input type="number" id="node-input-maxPages" style="width:60px" min="1"> )</div>
+  <div class="form-row"><label>Parameters</label><span style="color:#888">leave blank to take from <code>msg.payload.&lt;name&gt;</code> / <code>msg.&lt;name&gt;</code></span></div>
+  <div id="spotify-params" style="margin-left:10px"></div>
+</script>
+
+<script type="text/html" data-help-name="spotify-api">
+<p>Calls an endpoint of the Spotify Web API (player, search, tracks, albums, artists, playlists, library, users, shows, browse).</p>
+<h3>Inputs</h3>
+<p>Each parameter is taken from, in order: <code>msg.payload.&lt;param&gt;</code>, <code>msg.&lt;param&gt;</code>, the value set in the node.
+If <code>msg.payload</code> is a string or array it is used for the first required parameter.
+IDs may be given as plain IDs, <code>spotify:…</code> URIs or open.spotify.com URLs. Arrays may be comma separated.
+<code>user_id</code> defaults to the authorised user. Choose <i>set by msg.operation</i> to select the operation dynamically.</p>
+<h3>Outputs</h3>
+<dl class="message-properties">
+<dt>payload <span class="property-type">object</span></dt><dd>Response body (<code>null</code> for 204 responses).</dd>
+<dt>statusCode <span class="property-type">number</span></dt><dd>HTTP status.</dd>
+</dl>
+<p>Errors are raised so a Catch node can handle them (<code>msg.error</code>, <code>msg.statusCode</code>). Rate limits (429) are retried automatically.</p>
+<p><b>Note:</b> Spotify has restricted some endpoints (audio features/analysis, recommendations, related artists) for apps created after Nov 2024; they return 403 for such apps.</p>
+</script>
+
+<script type="text/javascript">
+RED.nodes.registerType('spotify-api', {
+  category: 'spotify',
+  color: '#1DB954',
+  defaults: {
+    name: { value: '' },
+    server: { type: 'spotify-config', required: true },
+    operation: { value: 'getPlayback', required: true },
+    params: { value: {} },
+    allPages: { value: false },
+    maxPages: { value: 20 }
+  },
+  inputs: 1, outputs: 1,
+  icon: 'white-globe.svg',
+  paletteLabel: 'spotify api',
+  label: function () { return this.name || (this.operation === 'msg' ? 'spotify (msg.operation)' : 'spotify: ' + this.operation); },
+  oneditprepare: function () {
+    var node = this;
+    var $sel = $('#node-input-operation');
+    var fixed = $.extend({}, node.params);
+    var ops = [];
+    function render() {
+      var op = ops.filter(function (o) { return o.op === $sel.val(); })[0];
+      var $c = $('#spotify-params').empty();
+      $('#spotify-allpages-row').toggle(!!op && op.method === 'GET');
+      if (!op) return;
+      op.params.forEach(function (p) {
+        var $r = $('<div class="form-row"></div>');
+        $('<label style="width:120px"></label>').text(p.name + (p.required ? ' *' : '')).appendTo($r);
+        $('<input type="text" style="width:60%">').attr({ 'data-param': p.name, placeholder: (p.type + (p.help ? ' – ' + p.help : '')) })
+          .val(fixed[p.name] || '').appendTo($r);
+        $c.append($r);
+      });
+    }
+    function collect() {
+      $('#spotify-params input').each(function () { fixed[$(this).attr('data-param')] = $(this).val(); });
+    }
+    $.getJSON('spotify-web-api/operations', function (data) {
+      ops = data;
+      var groups = {};
+      data.forEach(function (o) {
+        (groups[o.group] = groups[o.group] || $('<optgroup>').attr('label', o.group).appendTo($sel))
+          .append($('<option>').val(o.op).text(o.label));
+      });
+      $sel.prepend($('<option>').val('msg').text('— set by msg.operation —'));
+      $sel.val(node.operation);
+      render();
+    });
+    $sel.on('change', function () { collect(); render(); });
+    this._collect = collect; this._fixed = fixed;
+  },
+  oneditsave: function () {
+    this._collect();
+    var out = {}; var f = this._fixed;
+    $('#spotify-params input').each(function () { var v = $(this).val(); if (v !== '') out[$(this).attr('data-param')] = v; });
+    this.params = out;
+  }
+});
+</script>
