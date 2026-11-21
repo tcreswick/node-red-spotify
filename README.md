@@ -1,10 +1,13 @@
 # node-red-spotify
 
 [![npm](https://img.shields.io/npm/v/node-red-spotify)](https://www.npmjs.com/package/node-red-spotify)
+[![Node-RED Flow Library](https://img.shields.io/badge/Node--RED-Flow%20Library-8f0000)](https://flows.nodered.org/node/node-red-spotify)
 [![CI](https://github.com/tcreswick/node-red-spotify/actions/workflows/ci.yml/badge.svg)](https://github.com/tcreswick/node-red-spotify/actions/workflows/ci.yml)
 
 Node-RED nodes for the [Spotify Web API](https://developer.spotify.com/documentation/web-api), with the OAuth
 (Authorization Code + PKCE) flow handled by a configuration node.
+
+Listed on the Node-RED Flow Library: <https://flows.nodered.org/node/node-red-spotify>
 
 ## Nodes
 - **spotify-config** – Client ID/Secret, scopes, redirect URI, *Authorise* button. Stores tokens in
