@@ -1,6 +1,6 @@
 {
   "name": "node-red-spotify",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Node-RED nodes for the Spotify Web API with OAuth (authorization code / PKCE) via a config node",
   "keywords": [
     "node-red",
