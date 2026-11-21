@@ -1,0 +1,50 @@
+name: Publish
+
+# Push a tag like v1.0.1 (e.g. `npm version patch && git push --follow-tags`)
+# to test, publish to npm and refresh the Node-RED Flow Library.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write # npm trusted publishing (OIDC), no NPM_TOKEN secret needed
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm >= 11.5.1
+      - run: npm install -g npm@latest
+
+      - name: Check tag matches package.json
+        run: |
+          PKG="v$(node -p "require('./package.json').version")"
+          if [ "$PKG" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json $PKG"; exit 1
+          fi
+
+      - run: npm test
+
+      - run: npm publish --access public
+
+      - name: Refresh Node-RED Flow Library
+        run: |
+          NAME="$(node -p "require('./package.json').name")"
+          JAR="$(mktemp)"
+          # npm can take a moment to serve the new version
+          sleep 30
+          TOKEN="$(curl -fsS -c "$JAR" https://flows.nodered.org/add/node \
+            | grep -o 'name="_csrf" type="hidden" value="[^"]*"' | sed 's/.*value="//;s/"$//')"
+          RESULT="$(curl -sS -b "$JAR" -X POST https://flows.nodered.org/add/node \
+            --data-urlencode "module=$NAME" --data-urlencode "_csrf=$TOKEN")"
+          echo "Flow Library: $RESULT"
+          case "$RESULT" in /node/*) echo "Refreshed" ;; *) echo "::warning::Flow Library refresh did not confirm: $RESULT" ;; esac

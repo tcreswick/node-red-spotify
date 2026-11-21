@@ -1,5 +1,8 @@
 # node-red-spotify
 
+[![npm](https://img.shields.io/npm/v/node-red-spotify)](https://www.npmjs.com/package/node-red-spotify)
+[![CI](https://github.com/tcreswick/node-red-spotify/actions/workflows/ci.yml/badge.svg)](https://github.com/tcreswick/node-red-spotify/actions/workflows/ci.yml)
+
 Node-RED nodes for the [Spotify Web API](https://developer.spotify.com/documentation/web-api), with the OAuth
 (Authorization Code + PKCE) flow handled by a configuration node.
 
@@ -13,7 +16,7 @@ Node-RED nodes for the [Spotify Web API](https://developer.spotify.com/documenta
 
 ## Setup
 1. Create an app at <https://developer.spotify.com/dashboard>.
-2. Install: `cd ~/.node-red && npm install /path/to/node-red-spotify` and restart.
+2. Install from the Node-RED palette manager (search "spotify"), or `cd ~/.node-red && npm install node-red-spotify` and restart.
 3. Add a Spotify node, edit the config, copy the displayed **Redirect URI**
    (`<editor origin>/spotify-web-api/callback`) into the Spotify app's Redirect URIs.
    Spotify requires HTTPS (or `http://127.0.0.1`). If Node-RED sits behind a proxy, set the Redirect URI field manually.
